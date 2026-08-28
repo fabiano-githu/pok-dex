@@ -100,3 +100,23 @@ def home(request):
         {'pokemons': pokemons}
     )
 
+
+def detalhes(request, id):
+
+    url = f"https://pokeapi.co/api/v2/pokemon/{id}"
+
+    response = requests.get(url)
+
+    detail = response.json()
+
+    pokemon = {
+        'id': detail['id'],
+        'nome': detail['name'].capitalize(),
+        'imagem': detail['sprites']['front_default'],
+    }
+
+    return render(
+        request,
+        'detalhes.html',
+        {'pokemon': pokemon}
+    )
