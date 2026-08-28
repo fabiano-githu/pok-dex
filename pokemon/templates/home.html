@@ -1,0 +1,234 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Pokédex Premium</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+
+<body class="bg-dark text-light">
+
+
+    <!-- HEADER -->
+    <header class="header-premium py-5">
+
+        <div class="container text-center py-5">
+
+            <div class="d-flex justify-content-center align-items-center gap-3">
+
+                <img src="{% static 'img/png-clipart-pikachu-euclidean-ball-open-the-red-ball-wizard-pet-elf-removebg-preview.png' %}"
+                    alt="Pikachu" class="logo-pokedex  wih">
+
+                <h1 class="display-3 fw-bold title-premium mb-2">
+                    Pokédex
+                </h1>
+
+            </div>
+
+
+
+            <div class="title-line mx-auto mt-3"></div>
+
+        </div>
+
+    </header>
+
+
+    <main class="container-fluid px-4 py-5">
+
+        <div class="row g-5">
+
+
+            <!-- LISTA -->
+            <div class="col-lg-4">
+
+                <div class="card bg-black bg-opacity-25 text-white border-0 shadow-lg h-100">
+
+                    <div class="card-header bg-transparent border-secondary py-3">
+
+                        <h5 class="mb-0 fw-semibold text-secondary ">
+                            Lista de Pokémon
+                        </h5>
+
+                    </div>
+
+
+                    <div class="card-body p-0" style="max-height: 70vh; overflow-y: auto;">
+
+                        <div class="list-group list-group-flush" id="pokemon-list">
+
+
+                            {% for pokemon in pokemons %}
+
+                            <button type="button"
+                                class="list-group-item list-group-item-action bg-transparent text-light border-secondary pokemon-item py-3"
+                                data-nome="{{ pokemon.nome|lower }}" data-imagem="{{ pokemon.imagem }}"
+                                data-id="{{ pokemon.id }}" data-descricao="{{ pokemon.descricao|escapejs }}">
+
+
+                                <div class="d-flex align-items-center gap-3">
+
+
+                                    <img src="{{ pokemon.imagem }}" alt="{{ pokemon.nome }}" width="52" height="52"
+                                        class="list-img">
+
+
+                                    <div>
+
+                                        <div class="fw-semibold fs-5">
+                                            {{ pokemon.nome }}
+                                        </div>
+
+                                        <small class="text-secondary">
+                                            #{{ pokemon.id }}
+                                        </small>
+
+                                    </div>
+
+
+                                </div>
+
+
+                            </button>
+
+                            {% endfor %}
+
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ÁREA PRINCIPAL -->
+            <div class="col-lg-8">
+
+
+                <!-- PESQUISA -->
+                <div class="mb-4">
+
+                    <input type="text" id="search-input"
+                        class="form-control bg-black bg-opacity-25 text-white border-secondary rounded-3"
+                        placeholder="Pesquisar Pokémon pelo nome...">
+                        
+                    <!-- DESTAQUE -->
+                    <div class="card bg-black bg-opacity-25 border-0 shadow-lg">
+
+
+                        <div class="text-white text-center py-5">
+
+
+                            <p class="lead text-secondary mb-0">
+                                Explore os Pokémon da primeira geração
+                            </p>
+
+
+                            <div class="destaque-container mx-auto mb-4" id="open-modal" style="cursor: pointer;"
+                                title="Clique para ampliar">
+
+
+                                <img id="destaque-img" src="{{ pokemons.0.imagem }}" alt="{{ pokemons.0.nome }}"
+                                    class="pokemon-destaque">
+
+
+                            </div>
+
+
+                            <h2 id="destaque-nome" class="display-4 fw-bold text-warning mb-3">
+
+                                {{ pokemons.0.nome }}
+
+                            </h2>
+
+
+                            <span id="destaque-id" class="badge bg-warning text-dark fs-5 px-4 py-2 rounded-pill">
+
+                                #{{ pokemons.0.id }}
+
+                            </span>
+
+
+                            <p class="text-secondary mt-4 mb-0">
+
+                                Clique no Pokémon para ver em tamanho maior
+
+                            </p>
+
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+    </main>
+
+
+    <div class="modal fade" id="pokemonModal" tabindex="-1">
+
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+
+            <div class="modal-content bg-dark border-secondary">
+
+                <div class="modal-header border-secondary">
+
+                    <h5 class="modal-title text-warning fs-3" id="modal-nome">
+                        Pokémon
+                    </h5>
+
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <div class="modal-body text-center py-4">
+
+                    <!-- IMAGEM GRANDE -->
+                    <img id="modal-img" src="" alt="" style="
+                        width: 100%;
+                        max-width: 300px;
+                        height: 300px;
+                        object-fit: contain;
+                    ">
+
+                    <!-- ID -->
+                    <p id="modal-id" class="mt-3 text-secondary fs-5">
+                    </p>
+
+                    <!-- DESCRIÇÃO -->
+                    <p id="modal-descricao" class="text-light fs-5 mx-auto mt-4" style="max-width: 800px;">
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- BOOTSTRAP -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+
+    <!-- SEU JAVASCRIPT -->
+    <script src="{% static 'js/script.js' %}"></script>
+
+
+</body>
+
+</html>
