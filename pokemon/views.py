@@ -1,7 +1,47 @@
 
-from django.shortcuts import render
 import requests
+from django import forms
+from django.shortcuts import get_list_or_404, redirect, render
+
+from .models import pokemon
 from deep_translator import GoogleTranslator
+
+
+class PokemonForm(forms.ModelForm):
+     class Meta:
+         model = pokemon
+         fields = ["name", "species", "height", "weight","types","abilities","image"]
+         widgets = {
+            "name" : forms.TextInput(attrs={"classe": "form-control"}),
+            "species": forms.TextInput(attrs={"classe": "form-control"}),
+            "height": forms.NumberInput(attrs={"classe": "form-control", "step":"0.1","min":"0"}),
+            "weight": forms.NumberInput(attrs={"classe": "form-control", "step":"0.1","min":"0"}),
+            "types" :forms.TextInput(attrs={"classe": "form-control"}),
+            "abilities":forms.TextInput(attrs={"classe": "form-control"}),
+            "image":forms.URLInput(attrs={"classe": "form-control"}),
+         }
+
+
+
+
+# continuar na proxima aula 
+def __seralize__db__pokemon(pokemon):
+
+    types = [
+        value.strip().title()
+        for value in pokemon.types.split(",")
+        if value.strip()
+    ]
+
+    abilities = [
+        value.strip().title()
+        for value in pokemon.abilities.split(",")
+        if value.strip()
+    ]
+# continuar na proxima aula 
+
+
+
 
 
 def home(request):
