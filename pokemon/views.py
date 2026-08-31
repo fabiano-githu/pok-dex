@@ -79,14 +79,21 @@ def home(request):
         # ==========================================
 
         pokemon = {
+            
 
             'nome': detail['name'].capitalize(),
 
-            'imagem': detail['sprites']['front_default'],
+            #'imagem': detail['sprites']['front_default'],
+
+            'imagem': detail['sprites']['other']['official-artwork']['front_default'],
 
             'id': detail['id'],
 
-            'descricao': descricao
+            'descricao': descricao,
+
+            'peso': detail['weight'] / 10,
+
+            'altura': detail['height'] / 10
 
         }
 

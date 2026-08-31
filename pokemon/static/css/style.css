@@ -3,15 +3,7 @@
 ========================================================= */
 
 body {
-    background: linear-gradient(
-        135deg,
-        #3b0000,
-        #8b0000,
-        #d90429,
-        #ff4d4d
-    ) !important;
-
-    background-attachment: fixed;
+    background-color: #181313 !important;
     min-height: 100vh;
     font-family: Verdana, sans-serif;
 }
