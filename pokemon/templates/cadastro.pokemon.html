@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<div class="container mt-5 py-5">
+<div class="container bg-danger mt-5 py-5">
 
     <div class="row justify-content-center">
 
@@ -16,8 +16,27 @@
 
             <form method="post">
             {% csrf_token %} {{ form.as_p }}
+
+                <div class="d-flex gap-2 mt-3">
+
+                    <button type="submit" class="btn btn-primary flex-fill text-warning">
+
+                        Salvar
+
+                    </button>
+
+                    <a href="{% url 'home'%}" class="btn btn-dark text-warning">
+
+                        Voltar
+
+                    </a>
+
+                    
+                </div>
+
+
             </form>
-            
+
         </div>
 
     </div>
