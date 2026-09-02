@@ -1,31 +1,88 @@
 
 import requests
-from django import forms
-from django.shortcuts import get_list_or_404, redirect, render
 
-from .models import pokemon
+from django import forms
+from django.shortcuts import render
+
+from .models import Pokemon
+
 from deep_translator import GoogleTranslator
 
 
+# ==========================================================
+# FORMULÁRIO DO POKÉMON
+# ==========================================================
+
 class PokemonForm(forms.ModelForm):
-     class Meta:
-         model = pokemon
-         fields = ["name", "species", "height", "weight","types","abilities","image"]
-         widgets = {
-            "name" : forms.TextInput(attrs={"classe": "form-control"}),
-            "species": forms.TextInput(attrs={"classe": "form-control"}),
-            "height": forms.NumberInput(attrs={"classe": "form-control", "step":"0.1","min":"0"}),
-            "weight": forms.NumberInput(attrs={"classe": "form-control", "step":"0.1","min":"0"}),
-            "types" :forms.TextInput(attrs={"classe": "form-control"}),
-            "abilities":forms.TextInput(attrs={"classe": "form-control"}),
-            "image":forms.URLInput(attrs={"classe": "form-control"}),
-         }
+
+    class Meta:
+        model = Pokemon
+
+        fields = [
+            "name",
+            "species",
+            "height",
+            "weight",
+            "types",
+            "abilities",
+            "image",
+        ]
+
+        widgets = {
+
+            "name": forms.TextInput(
+                attrs={
+                    "class": "form-control"
+                }
+            ),
+
+            "species": forms.TextInput(
+                attrs={
+                    "class": "form-control"
+                }
+            ),
+
+            "height": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "step": "0.1",
+                    "min": "0"
+                }
+            ),
+
+            "weight": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "step": "0.1",
+                    "min": "0"
+                }
+            ),
+
+            "types": forms.TextInput(
+                attrs={
+                    "class": "form-control"
+                }
+            ),
+
+            "abilities": forms.TextInput(
+                attrs={
+                    "class": "form-control"
+                }
+            ),
+
+            "image": forms.URLInput(
+                attrs={
+                    "class": "form-control"
+                }
+            ),
+        }
 
 
+# ==========================================================
+# SERIALIZAR DADOS DO BANCO
+# ==========================================================
 
-
-# continuar na proxima aula 
-def __seralize__db__pokemon(pokemon):
+def serialize_db_pokemon(pokemon):
 
     types = [
         value.strip().title()
@@ -38,115 +95,167 @@ def __seralize__db__pokemon(pokemon):
         for value in pokemon.abilities.split(",")
         if value.strip()
     ]
-# continuar na proxima aula 
+
+    return {
+        "types": types,
+        "abilities": abilities,
+    }
 
 
-
-
+# ==========================================================
+# HOME
+# ==========================================================
 
 def home(request):
 
     url = "https://pokeapi.co/api/v2/pokemon?limit=20"
 
     response = requests.get(url)
+
     data = response.json()
 
     pokemons = []
 
-    for item in data['results']:
+    for item in data["results"]:
 
-        # Dados principais do Pokémon
-        detail = requests.get(item['url']).json()
+        # ==================================================
+        # DADOS PRINCIPAIS
+        # ==================================================
 
-        # Dados da espécie
-        species = requests.get(detail['species']['url']).json()
+        detail_response = requests.get(item["url"])
 
+        detail = detail_response.json()
 
-        # ==========================================
-        # BUSCA A DESCRIÇÃO
-        # ==========================================
+        # ==================================================
+        # DADOS DA ESPÉCIE
+        # ==================================================
+
+        species_response = requests.get(
+            detail["species"]["url"]
+        )
+
+        species = species_response.json()
+
+        # ==================================================
+        # BUSCAR DESCRIÇÃO
+        # ==================================================
 
         descricao = ""
 
         # Primeiro tenta português
-        for texto in species['flavor_text_entries']:
+        for texto in species["flavor_text_entries"]:
 
-            if texto['language']['name'] == 'pt':
+            if texto["language"]["name"] == "pt":
 
-                descricao = texto['flavor_text']
+                descricao = texto["flavor_text"]
 
                 break
 
-
-        # Se não encontrou português, pega inglês
+        # Se não encontrou português,
+        # pega inglês
         if not descricao:
 
-            for texto in species['flavor_text_entries']:
+            for texto in species["flavor_text_entries"]:
 
-                if texto['language']['name'] == 'en':
+                if texto["language"]["name"] == "en":
 
-                    descricao = texto['flavor_text']
+                    descricao = texto["flavor_text"]
 
                     break
 
+        # ==================================================
+        # LIMPAR DESCRIÇÃO
+        # ==================================================
 
-        # Remove quebras de linha
-        descricao = descricao.replace('\n', ' ').replace('\f', ' ')
+        descricao = (
+            descricao
+            .replace("\n", " ")
+            .replace("\f", " ")
+        )
 
-
-        # ==========================================
-        # TRADUZ PARA PORTUGUÊS
-        # ==========================================
+        # ==================================================
+        # TRADUZIR PARA PORTUGUÊS
+        # ==================================================
 
         if descricao:
 
             try:
 
                 descricao = GoogleTranslator(
-                    source='auto',
-                    target='pt'
+                    source="auto",
+                    target="pt"
                 ).translate(descricao)
 
             except Exception:
 
                 # Se a tradução falhar,
-                # mantém o texto original
+                # mantém a descrição original
                 pass
 
+        # ==================================================
+        # TIPOS
+        # ==================================================
 
-        # ==========================================
-        # CRIA O POKÉMON
-        # ==========================================
+        tipos = [
+            tipo["type"]["name"].capitalize()
+            for tipo in detail["types"]
+        ]
 
-        pokemon = {
-            
+        # ==================================================
+        # HABILIDADES
+        # ==================================================
 
-            'nome': detail['name'].capitalize(),
+        habilidades = [
+            habilidade["ability"]["name"].replace("-", " ").title()
+            for habilidade in detail["abilities"]
+        ]
 
-            #'imagem': detail['sprites']['front_default'],
+        # ==================================================
+        # CRIAR OBJETO DO POKÉMON
+        # ==================================================
 
-            'imagem': detail['sprites']['other']['official-artwork']['front_default'],
+        pokemon_data = {
 
-            'id': detail['id'],
+            "nome": detail["name"].capitalize(),
 
-            'descricao': descricao,
+            "imagem": (
+                detail["sprites"]
+                ["other"]
+                ["official-artwork"]
+                ["front_default"]
+            ),
 
-            'peso': detail['weight'] / 10,
+            "id": detail["id"],
 
-            'altura': detail['height'] / 10
+            "descricao": descricao,
 
+            "peso": detail["weight"] / 10,
+
+            "altura": detail["height"] / 10,
+
+            "tipos": tipos,
+
+            "habilidades": habilidades,
         }
 
+        pokemons.append(pokemon_data)
 
-        pokemons.append(pokemon)
-
+    # ======================================================
+    # RENDERIZAR HOME
+    # ======================================================
 
     return render(
         request,
-        'home.html',
-        {'pokemons': pokemons}
+        "home.html",
+        {
+            "pokemons": pokemons
+        }
     )
 
+
+# ==========================================================
+# DETALHES DO POKÉMON
+# ==========================================================
 
 def detalhes(request, id):
 
@@ -156,14 +265,176 @@ def detalhes(request, id):
 
     detail = response.json()
 
-    pokemon = {
-        'id': detail['id'],
-        'nome': detail['name'].capitalize(),
-        'imagem': detail['sprites']['front_default'],
+    # ======================================================
+    # TIPOS
+    # ======================================================
+
+    tipos = [
+        tipo["type"]["name"].capitalize()
+        for tipo in detail["types"]
+    ]
+
+    # ======================================================
+    # HABILIDADES
+    # ======================================================
+
+    habilidades = [
+        habilidade["ability"]["name"].replace("-", " ").title()
+        for habilidade in detail["abilities"]
+    ]
+
+    # ======================================================
+    # OBJETO DO POKÉMON
+    # ======================================================
+
+    pokemon_data = {
+
+        "id": detail["id"],
+
+        "nome": detail["name"].capitalize(),
+
+        "imagem": (
+            detail["sprites"]
+            ["other"]
+            ["official-artwork"]
+            ["front_default"]
+        ),
+
+        "imagem_front": detail["sprites"]["front_default"],
+
+        "imagem_back": detail["sprites"]["back_default"],
+
+        "peso": detail["weight"] / 10,
+
+        "altura": detail["height"] / 10,
+
+        "tipos": tipos,
+
+        "habilidades": habilidades,
     }
+
+    # ======================================================
+    # RENDERIZAR DETALHES
+    # ======================================================
 
     return render(
         request,
-        'detalhes.html',
-        {'pokemon': pokemon}
+        "detalhes.html",
+        {
+            "pokemon": pokemon_data
+        }
+    )
+
+# ======================================================
+    # criar pokemon no form
+    # ======================================================
+
+
+def criar_pokemon(request):
+
+    if request.method == "POST":
+
+        form = PokemonForm(request.POST)
+
+        if form.is_valid():
+
+            form.save()
+
+            return redirect("home")
+
+    else:
+
+        form = PokemonForm()
+
+    return render(
+        request,
+        "cadastro.pokemon.html",
+        {
+            "form": form
+        }
+    )
+
+
+    # ======================================================
+    # editar pokemon no form
+    # ======================================================
+
+def editar_pokemon(request, id):
+
+    pokemon = get_object_or_404(
+        Pokemon,
+        id=id
+    )
+
+    if request.method == "POST":
+
+        form = PokemonForm(
+            request.POST,
+            instance=pokemon
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            return redirect("home")
+
+    else:
+
+        form = PokemonForm(
+            instance=pokemon
+        )
+
+    return render(
+        request,
+        "cadastro.pokemon.html",
+        {
+            "form": form,
+            "pokemon": pokemon
+        }
+    )
+
+
+    # ======================================================
+    # deletar pokemon no form
+    # ======================================================
+
+def deletar_pokemon(request, id):
+
+    pokemon = get_object_or_404(
+        Pokemon,
+        id=id
+    )
+
+    if request.method == "POST":
+
+        pokemon.delete()
+
+        return redirect("home")
+
+    return render(
+        request,
+        "confirmar_exclusao.html",
+        {
+            "pokemon": pokemon
+        }
+    )
+
+
+
+
+    # ======================================================
+    # listar pokemon no form
+    # ======================================================
+
+def listar_pokemon(request):
+
+    pokemons = Pokemon.objects.all()
+
+    return render(
+        request,
+        "listar_pokemon.html",
+        {
+            "pokemons": pokemons
+        }
     )
